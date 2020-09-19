@@ -2,6 +2,7 @@ import scalafx.scene.paint.Color
 import scalafx.scene.paint.Color._
 import untitled.goose.framework.dsl.GooseDSL
 import untitled.goose.framework.dsl.board.words.DispositionType.Spiral
+import untitled.goose.framework.model.Colour
 import untitled.goose.framework.model.entities.runtime.GameStateExtensions._
 import untitled.goose.framework.model.events.consumable._
 import untitled.goose.framework.model.events.persistent.{GainTurnEvent, LoseTurnEvent, TileActivatedEvent}
@@ -19,7 +20,7 @@ object GooseGame extends GooseDSL with CustomValues {
   the game board has disposition(Spiral)
 
   The tiles (1 to 63) have group("path")
-  All tiles "path" have color(Color.web("6f9d79"))
+  All tiles "path" have colour(Colour("#6f9d79"))
 
   the tile 6 has name(theBridge)
   the tile 19 has name(theInn)
@@ -33,7 +34,7 @@ object GooseGame extends GooseDSL with CustomValues {
   the tile theInn has background("inn.png")
   the tile theLabyrinth has background("labyrinth.png")
   the tile thePrison has(
-    color(DarkGray),
+    colour(Colour("#303030")),
     background("prison.png")
   )
   the tile theDeath has background("death.png")
@@ -41,7 +42,7 @@ object GooseGame extends GooseDSL with CustomValues {
   The tile 63 has(
     name(theEnd),
     background("victory.png"),
-    color(Gold)
+    colour(Colour("#ffd000"))
   )
 
   The tiles(5, 9, 14, 18, 23, 27, 32, 36, 41, 45, 50, 54, 59) have group(gooseGroup)
