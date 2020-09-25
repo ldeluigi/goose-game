@@ -1,12 +1,10 @@
-import scalafx.scene.paint.Color
-import scalafx.scene.paint.Color._
 import untitled.goose.framework.dsl.GooseDSL
 import untitled.goose.framework.dsl.board.words.DispositionType.Spiral
 import untitled.goose.framework.model.Colour
+import untitled.goose.framework.model.entities.definitions.PlayerOrderingType.Fixed
 import untitled.goose.framework.model.entities.runtime.GameStateExtensions._
 import untitled.goose.framework.model.events.consumable._
 import untitled.goose.framework.model.events.persistent.{GainTurnEvent, LoseTurnEvent, TileActivatedEvent}
-import untitled.goose.framework.model.rules.ruleset.PlayerOrderingType.Fixed
 
 
 object GooseGame extends GooseDSL with CustomValues {
