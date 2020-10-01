@@ -1,8 +1,9 @@
+import untitled.goose.framework.dsl.prolog.GooseDSLPrologExtension
 import untitled.goose.framework.model.entities.runtime.GameStateExtensions._
 import untitled.goose.framework.model.entities.runtime.{GameState, Tile}
 import untitled.goose.framework.model.events.persistent.TurnEndedEvent
 
-trait CustomValues {
+trait CustomValues extends GooseDSLPrologExtension {
   val gooseGroup = "GooseTile"
   val theBridge = "the Bridge"
   val theWell = "the Well"
@@ -15,6 +16,8 @@ trait CustomValues {
 
   def tileIs(name: String) : Tile => Boolean = _.definition.name.contains(name)
 
-  //TODO why not autoimport of extensions?
-  def isPlayerFirstTurn : GameState => Boolean = _.currentPlayer.history.only[TurnEndedEvent].isEmpty
+  //def isPlayerFirstTurn : GameState => Boolean = _.currentPlayer.history.only[TurnEndedEvent].isEmpty
+
+  def isPlayerFirstTurn: GameState => Boolean =
+    state2p("""currentPlayer(player(_, history(H))), \+ member(event(TurnEndedEvent, _, _), H).""")
 }

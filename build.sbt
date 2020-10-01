@@ -8,6 +8,8 @@ scalaVersion := "2.12.12"
 libraryDependencies += "io.vertx" %% "vertx-lang-scala" % "3.9.1"
 // Add dependency on ScalaFX library
 libraryDependencies += "org.scalafx" %% "scalafx" % "14-R19"
+libraryDependencies += "it.unibo.alice.tuprolog" % "2p-core" % "4.1.1"
+
 
 // Determine OS version of JavaFX binaries
 lazy val osName = System.getProperty("os.name") match {
