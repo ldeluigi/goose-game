@@ -18,6 +18,6 @@ trait CustomValues extends GooseDSLPrologExtension {
 
   //def isPlayerFirstTurn : GameState => Boolean = _.currentPlayer.history.only[TurnEndedEvent].isEmpty
 
-  def isPlayerFirstTurn: GameState => Boolean =
-    state2p("""currentPlayer(player(_, history(H))), \+ member(event(TurnEndedEvent, _, _), H).""")
+  val isPlayerFirstTurn: GameState => Boolean =
+    state2p("""currentPlayer(player(_, history(H))), \+ member(event(TurnEndedEvent, _, _, _), H).""")
 }
