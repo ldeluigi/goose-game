@@ -2,7 +2,9 @@ import untitled.goose.framework.dsl.GooseDSL
 import untitled.goose.framework.dsl.board.words.DispositionType.Spiral
 import untitled.goose.framework.model.Colour
 import untitled.goose.framework.model.entities.definitions.PlayerOrderingType.Fixed
-import untitled.goose.framework.model.entities.runtime.GameStateExtensions._
+import untitled.goose.framework.model.entities.runtime.functional.GameStateExtensions.PimpedGameState
+import untitled.goose.framework.model.entities.runtime.functional.HistoryExtensions.PimpedHistory
+import untitled.goose.framework.model.entities.runtime.functional.GameStateUpdate.GameStateUpdateImpl
 import untitled.goose.framework.model.events.consumable._
 import untitled.goose.framework.model.events.persistent.{GainTurnEvent, LoseTurnEvent, TileActivatedEvent}
 
@@ -73,11 +75,11 @@ object GooseGame extends GooseDSL with CustomValues {
   //If you throw a 3 on your first turn you can move straight to tile 26.
   When(isPlayerFirstTurn) and numberOf(events[MovementDiceRollEvent] matching (_.diceResult.contains(3))) is (_ > 0) resolve(
     displayMessage("Special first throw!", "You rolled a 3 on your first turn, go to tile 26"),
-    trigger((e, s) => TeleportEvent(s.getTile(26).get, e.player, s.currentTurn, s.currentCycle))
+    trigger((e, s) => TeleportEvent(s.getTile(26).get.definition, e.player, s.currentTurn, s.currentCycle))
   ) andThen consume && save
 
   //If your piece lands on a Goose tile you can throw your dice again.
-  always when numberOf(events[StopOnTileEvent] matching (_.tile.definition.belongsTo(gooseGroup))) is (_ > 0) resolve(
+  always when numberOf(events[StopOnTileEvent] matching (_.tile.belongsTo(gooseGroup))) is (_ > 0) resolve(
     displayMessage("Landed on a Goose", "You can roll the dice again"),
     forEach trigger ((e, s) => GainTurnEvent(e.player, s.currentTurn, s.currentCycle)),
     forEach trigger ((e, s) => TileActivatedEvent(e.tile, s.currentTurn, s.currentCycle))
@@ -87,7 +89,7 @@ object GooseGame extends GooseDSL with CustomValues {
   //If you land on the Inn miss a turn while you stop for some tasty dinner.
   always when numberOf(events[StopOnTileEvent] matching (e => tileIs(theBridge)(e.tile) || tileIs(theInn)(e.tile))
   ) is (_ > 0) resolve(
-    forEach displayMessage ((e, _) => ("Landed on " + e.tile.definition.name.get, if (tileIs(theBridge)(e.tile))
+    forEach displayMessage ((e, _) => ("Landed on " + e.tile.name.get, if (tileIs(theBridge)(e.tile))
       "Wait a turn while you pay the toll" else "Wait a turn while you stop for some tasty dinner")),
     forEach trigger ((e, s) => LoseTurnEvent(e.player, s.currentTurn, s.currentCycle)),
     forEach trigger ((e, s) => TileActivatedEvent(e.tile, s.currentTurn, s.currentCycle))
@@ -97,7 +99,7 @@ object GooseGame extends GooseDSL with CustomValues {
   //If you land on the Prison you will have to miss three turns while you are behind bars.
   always when numberOf(events[StopOnTileEvent] matching (e => tileIs(theWell)(e.tile) || tileIs(thePrison)(e.tile))
   ) is (_ > 0) resolve(
-    forEach displayMessage ((e, _) => ("Landed on " + e.tile.definition.name.get, if (tileIs(theWell)(e.tile))
+    forEach displayMessage ((e, _) => ("Landed on " + e.tile.name.get, if (tileIs(theWell)(e.tile))
       "Make a wish and miss three turns" else "Miss three turns while you are behind bars")),
     forEach trigger ((e, s) => LoseTurnEvent(e.player, s.currentTurn, s.currentCycle)),
     forEach trigger ((e, s) => LoseTurnEvent(e.player, s.currentTurn, s.currentCycle)),
@@ -108,18 +110,18 @@ object GooseGame extends GooseDSL with CustomValues {
   //If another player passes you before your three turns are up you can start moving again on your next go.
   always when numberOf(events[PlayerPassedEvent] matching (e => tileIs(theWell)(e.tile) || tileIs(thePrison)(e.tile))
   ) is (_ > 0) resolve (
-    forEach updateState ((e, _) => _ => e.player.history = e.player.history.excludeEventType[LoseTurnEvent]())
+    forEach updateState ((e, _) => s => s.updatePlayerHistory(e.player, _.excludeEventType[LoseTurnEvent]()))
     ) andThen consume
 
   //If you land on the Labyrinth, square 42, you will get lost in the maze and have to move back to square 37
   //If you land on Death, square 58, you have to go back to square 1 and start all over again!
   always when numberOf(events[StopOnTileEvent] matching (e => tileIs(theLabyrinth)(e.tile) || tileIs(theDeath)(e.tile))
   ) is (_ > 0) resolve(
-    forEach displayMessage ((e, _) => ("Landed on " + e.tile.definition.name.get, if (tileIs(theLabyrinth)(e.tile))
+    forEach displayMessage ((e, _) => ("Landed on " + e.tile.name.get, if (tileIs(theLabyrinth)(e.tile))
       "You enter the labyrinth but you get lost... You exit on tile 37" else "You died! Go back to the beginning and try again")),
     forEach trigger ((e, s) => {
       val tile = if (tileIs(theLabyrinth)(e.tile)) s.getTile(37).get else s.getTile(1).get
-      TeleportEvent(tile, e.player, s.currentTurn, s.currentCycle)
+      TeleportEvent(tile.definition, e.player, s.currentTurn, s.currentCycle)
     }),
     forEach trigger ((e, s) => TileActivatedEvent(e.tile, s.currentTurn, s.currentCycle))
   ) andThen consume
